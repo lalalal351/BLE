@@ -3,18 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>蓝牙串口调试终端</title>
+    <title>蓝牙串口</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f2f2f7">
+    <meta name="apple-mobile-web-app-title" content="蓝牙串口">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" href="./icon.png">
+    <link rel="apple-touch-icon" href="./icon.png">
     <style>
+        /* 移动端清爽明亮主题 */
         :root {
-            --primary: #007aff;
+            --primary: #007aff; /* 科技蓝 */
             --primary-active: #005bb5;
             --success: #34c759;
             --danger: #ff3b30;
-            --bg-color: #f2f2f7;
+            --bg-color: #f2f2f7; /* 浅灰背景 */
             --card-bg: #ffffff;
             --text-main: #000000;
             --text-muted: #8e8e93;
@@ -27,6 +32,7 @@
             color: var(--text-main);
             margin: 0;
             padding: 12px;
+            /* 防止iOS回弹发白 */
             overscroll-behavior-y: none;
         }
 
@@ -40,6 +46,7 @@
             margin-bottom: 20px;
         }
 
+        /* 标题与状态 */
         .header {
             display: flex;
             justify-content: space-between;
@@ -75,6 +82,7 @@
         .status-pill.connected { background-color: #e4f8e9; color: #248a3d; }
         .status-pill.connected::before { background-color: var(--success); }
 
+        /* 配置区 (手机端堆叠显示) */
         .config-panel { 
             background: #fbfbfd; 
             border: 0.5px solid var(--border-color); 
@@ -98,11 +106,12 @@
             border: 0.5px solid var(--border-color); 
             border-radius: 6px; 
             font-family: monospace;
-            font-size: 16px; 
+            font-size: 16px; /* iOS大于16px不自动放大 */
             width: 60px;
             text-align: center;
         }
 
+        /* 文本区域 */
         .section-header { 
             display: flex; 
             justify-content: space-between; 
@@ -120,7 +129,7 @@
             border-radius: 10px; 
             font-size: 15px;
             line-height: 1.5;
-            resize: none; 
+            resize: none; /* 手机端禁用手动拖拽大小 */
             background-color: #ffffff;
             color: #000000;
             font-family: SFMono-Regular, Consolas, monospace;
@@ -129,11 +138,13 @@
         
         textarea:focus { outline: none; border-color: var(--primary); }
 
+        /* 手机端专属滚动条优化 */
         #receiveArea {
-            height: 200px; 
-            -webkit-overflow-scrolling: touch; 
+            height: 250px; /* 手机端固定高度 */
+            -webkit-overflow-scrolling: touch; /* 顺滑滚动 */
         }
 
+        /* 按钮与控制栏 */
         .controls-row { 
             display: flex; 
             justify-content: space-between; 
@@ -154,7 +165,7 @@
             justify-content: center;
             align-items: center;
             gap: 6px;
-            -webkit-tap-highlight-color: transparent; 
+            -webkit-tap-highlight-color: transparent; /* 去除安卓点击灰影 */
         }
         button:active:not(:disabled) { background-color: var(--primary-active); }
         button:disabled { background-color: #d1d1d6; color: #8e8e93; }
@@ -163,6 +174,7 @@
         .btn-text { background: transparent; color: var(--primary); padding: 4px 8px; font-size: 13px; border-radius: 4px; }
         .btn-text:active { background: #e5e5ea; }
 
+        /* iOS 风格分段选择器 */
         .segmented-control { 
             display: flex; 
             background: #eeeeef; 
@@ -184,38 +196,39 @@
             background: white; 
             box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
         }
+
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h2>蓝牙串口调试终端</h2>
+            <h2>蓝牙串口</h2>
             <div id="statusBadge" class="status-pill">未连接</div>
         </div>
 
         <div class="config-panel">
             <div class="input-row">
-                <label>主服务 (Service):</label>
+                <label>主服务 (Service UUID):</label>
                 <input type="text" id="serviceUuid" value="FFE0">
             </div>
             <div class="input-row">
-                <label>特征值 (Char):</label>
+                <label>特征值 (Char UUID):</label>
                 <input type="text" id="charUuid" value="FFE1">
             </div>
-            <button id="connectBtn" class="btn-full" onclick="toggleConnection()">搜索并配对设备</button>
+            <button id="connectBtn" class="btn-full" onclick="toggleConnection()">搜索设备</button>
         </div>
 
         <div class="section-header">
-            <span>数据交互记录 (RX/TX)</span>
-            <button class="btn-text" onclick="clearReceive()">清空日志</button>
+            <span>接收数据 (RX)</span>
+            <button class="btn-text" onclick="clearReceive()">清空</button>
         </div>
-        <textarea id="receiveArea" readonly placeholder="等待设备连接并执行数据交互..."></textarea>
+        <textarea id="receiveArea" readonly placeholder="等待蓝牙设备连接并发送数据..."></textarea>
 
         <div class="section-header">
-            <span>下发指令区 (TX)</span>
-            <button class="btn-text" onclick="clearSend()">清空输入</button>
+            <span>发送数据 (TX)</span>
+            <button class="btn-text" onclick="clearSend()">清空</button>
         </div>
-        <textarea id="sendArea" rows="2" placeholder="输入需下发至底层的数据帧"></textarea>
+        <textarea id="sendArea" rows="2" placeholder="输入要发送的数据"></textarea>
 
         <div class="controls-row">
             <div class="segmented-control">
@@ -224,24 +237,17 @@
                 <input type="radio" id="fmtHex" name="format" value="HEX">
                 <label for="fmtHex">HEX</label>
             </div>
-            <button id="sendBtn" style="width: 120px;" onclick="sendData()" disabled>单次发送</button>
+            <button id="sendBtn" style="width: 120px;" onclick="sendData()" disabled>发送</button>
         </div>
 
-        <div class="section-header" style="margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 16px;">
-            <span>可靠性测试 (Loopback)</span>
-            <button class="btn-text" onclick="resetStats()">重置统计</button>
-        </div>
-        <div class="config-panel" style="background-color: #f0f4f8;">
+        <div class="config-panel" style="margin-top: 20px;">
             <div class="input-row">
-                <label>触发周期 (ms):</label>
-                <input type="number" id="intervalMs" value="1000">
+                <label>定时发送间隔 (ms):</label>
+                <input type="number" id="autoSendInterval" value="1000" style="width: 80px;">
             </div>
-            <button id="autoSendBtn" class="btn-full" style="background-color: var(--success);" onclick="toggleAutoSend()" disabled>启动定时环回测算</button>
-            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-top: 12px; font-weight: 500;">
-                <span style="color: var(--text-muted);">发出包: <b id="statSent" style="color: var(--text-main);">0</b></span>
-                <span style="color: var(--text-muted);">收回包: <b id="statRecv" style="color: var(--text-main);">0</b></span>
-                <span style="color: var(--text-muted);">错漏包: <b id="statErr" style="color: var(--danger);">0</b></span>
-                <span style="color: var(--text-muted);">误码率: <b id="statRate" style="color: var(--danger);">0.00%</b></span>
+            <button id="autoSendBtn" class="btn-full" style="background-color: var(--success);" onclick="toggleAutoSend()" disabled>开启定时发送</button>
+            <div style="text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 8px;">
+                已发送数据包: <span id="autoSendCount" style="color: var(--text-main); font-weight: bold;">0</span>
             </div>
         </div>
     </div>
@@ -251,15 +257,12 @@
         let rxCharacteristic;
         let txCharacteristic;
 
-        /* ======= 误码率测试核心变量 ======= */
+        /* 新增：定时发送全局变量 */
         let autoSendTimer = null;
-        let isAutoTesting = false;
-        let testStats = { sent: 0, recv: 0, err: 0 };
-        let expectedPayloadStr = null; 
-        let currentRxBuffer = []; 
-        let currentFormat = 'ASCII';
+        let isAutoSending = false;
+        let autoSendCounter = 0;
 
-        // 格式转换器
+        // UUID转换器
         function getUuid(val) {
             val = val.trim().toLowerCase();
             if (val.length === 4) return parseInt(val, 16);
@@ -279,6 +282,7 @@
             const charUuid = getUuid(document.getElementById('charUuid').value);
 
             try {
+                // 同样保留了不限制设备搜索的代码，保证 HC-04 能秒出
                 bluetoothDevice = await navigator.bluetooth.requestDevice({
                     acceptAllDevices: true,
                     optionalServices: [serviceUuid]
@@ -296,28 +300,29 @@
 
                 // 更新UI状态
                 const statusBadge = document.getElementById('statusBadge');
-                statusBadge.textContent = '设备已连接';
+                statusBadge.textContent = '已连接';
                 statusBadge.classList.add('connected');
                 
                 const connectBtn = document.getElementById('connectBtn');
-                connectBtn.textContent = '切断无线连接';
+                connectBtn.textContent = '断开连接';
                 connectBtn.style.backgroundColor = 'var(--danger)';
+                connectBtn.style.color = '#fff';
                 
                 document.getElementById('sendBtn').disabled = false;
-                document.getElementById('autoSendBtn').disabled = false;
+                document.getElementById('autoSendBtn').disabled = false; // 启用定时按钮
                 document.getElementById('serviceUuid').disabled = true;
                 document.getElementById('charUuid').disabled = true;
 
-                appendLog('底层协议', '无线通信链路握手成功');
+                appendLog('系统', '蓝牙已连接准备就绪');
             } catch (error) {
-                if (error.name !== 'NotFoundError') {
-                    alert('底层链路建立失败: ' + error.message);
+                if (error.name !== 'NotFoundError') { // 忽略用户主动取消的选择
+                    alert('连接失败: ' + error.message);
                 }
             }
         }
 
         function onDisconnected() {
-            appendLog('底层协议', '无线通信链路意外断开');
+            appendLog('系统', '设备已断开连接');
             updateUIOnDisconnect();
         }
 
@@ -329,25 +334,22 @@
         }
 
         function updateUIOnDisconnect() {
-            if (isAutoTesting) {
-                toggleAutoSend(); // 强行阻断测试循环
-            }
+            if (isAutoSending) toggleAutoSend(); // 强制关闭定时器
 
             const statusBadge = document.getElementById('statusBadge');
-            statusBadge.textContent = '物理连接断开';
+            statusBadge.textContent = '未连接';
             statusBadge.classList.remove('connected');
             
             const connectBtn = document.getElementById('connectBtn');
-            connectBtn.textContent = '搜索并配对设备';
+            connectBtn.textContent = '搜索设备';
             connectBtn.style.backgroundColor = 'var(--primary)';
             
             document.getElementById('sendBtn').disabled = true;
-            document.getElementById('autoSendBtn').disabled = true;
+            document.getElementById('autoSendBtn').disabled = true; // 禁用定时按钮
             document.getElementById('serviceUuid').disabled = false;
             document.getElementById('charUuid').disabled = false;
         }
 
-        // 数据接收中断回调
         function handleReceive(event) {
             const value = event.target.value;
             const uint8Array = new Uint8Array(value.buffer);
@@ -359,42 +361,26 @@
             } else {
                 displayStr = Array.from(uint8Array).map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' ') + ' ';
             }
-            appendLog('底端上传', displayStr);
-
-            // 拦截数据汇入测试缓冲池
-            if (isAutoTesting) {
-                if (format === 'ASCII') {
-                    currentRxBuffer.push(new TextDecoder('utf-8').decode(uint8Array));
-                } else {
-                    currentRxBuffer.push(...Array.from(uint8Array));
-                }
-            }
+            appendLog('接收', displayStr);
         }
 
-        // 单次手动推送数据
         async function sendData() {
-            if (!txCharacteristic || isAutoTesting) return;
-            const format = document.querySelector('input[name="format"]:checked').value;
-            executeDirectSend(format, document.getElementById('sendArea').value);
-        }
+            if (!txCharacteristic) return;
 
-        // 执行底层写寄存器操作
-        async function executeDirectSend(format, dataStr) {
-            if (!dataStr.trim()) return false;
+            const sendArea = document.getElementById('sendArea');
+            const format = document.querySelector('input[name="format"]:checked').value;
+            let data = sendArea.value;
+
+            if (!data.trim()) return;
 
             let uint8Array;
             if (format === 'ASCII') {
-                uint8Array = new TextEncoder().encode(dataStr);
+                uint8Array = new TextEncoder().encode(data);
             } else {
-                const hexStr = dataStr.replace(/\s+/g, '');
-                if (/[^0-9a-fA-F]/.test(hexStr)) {
-                    alert('格式校验驳回：侦测到非十六进制越界字符');
-                    return false;
-                }
-                if (hexStr.length % 2 !== 0) {
-                    alert('格式校验驳回：十六进制字符串长度须维持偶数');
-                    return false;
-                }
+                const hexStr = data.replace(/\s+/g, '');
+                if (/[^0-9a-fA-F]/.test(hexStr)) return alert('请检查：包含非HEX字符');
+                if (hexStr.length % 2 !== 0) return alert('请检查：HEX长度必须为偶数');
+                
                 uint8Array = new Uint8Array(hexStr.length / 2);
                 for (let i = 0; i < hexStr.length; i += 2) {
                     uint8Array[i / 2] = parseInt(hexStr.substring(i, i + 2), 16);
@@ -403,133 +389,68 @@
 
             try {
                 await txCharacteristic.writeValue(uint8Array);
-                appendLog('顶端下发', dataStr);
-                return uint8Array;
+                appendLog('发送', data);
+                
+                // 若处于定时发送模式，更新计数器
+                if(isAutoSending) {
+                    autoSendCounter++;
+                    document.getElementById('autoSendCount').textContent = autoSendCounter;
+                }
             } catch (error) {
-                appendLog('系统级报错', '写寄存器超时或遭到物理拒绝');
-                return false;
+                if(!isAutoSending) alert('发送失败: ' + error.message);
+                else appendLog('系统', '定时发送异常: ' + error.message);
             }
         }
 
-        /* ======= 闭环测算核心算法 ======= */
-
+        /* 新增：定时发送逻辑 */
         function toggleAutoSend() {
             const btn = document.getElementById('autoSendBtn');
-            const interval = parseInt(document.getElementById('intervalMs').value) || 1000;
+            const interval = parseInt(document.getElementById('autoSendInterval').value) || 1000;
 
-            if (!isAutoTesting) {
-                // 激活测算
-                const data = document.getElementById('sendArea').value;
-                if (!data.trim()) {
-                    return alert('拒绝执行：请预先在下发区填入待测验的基准数据流');
+            if (!isAutoSending) {
+                // 校验输入框是否为空
+                if (!document.getElementById('sendArea').value.trim()) {
+                    return alert('请输入要发送的数据！');
                 }
-
-                isAutoTesting = true;
-                btn.textContent = '紧急终止测算';
+                
+                isAutoSending = true;
+                btn.textContent = '停止定时发送';
                 btn.style.backgroundColor = 'var(--danger)';
-                document.getElementById('sendBtn').disabled = true;
+                document.getElementById('sendBtn').disabled = true; // 禁用手动发送按钮防冲突
                 
-                expectedPayloadStr = null;
-                currentRxBuffer = [];
-                
-                triggerAutoSendCycle();
-                autoSendTimer = setInterval(triggerAutoSendCycle, interval);
-                appendLog('算法调度', '可靠性测试引擎已全速运转');
+                // 重置并启动
+                autoSendCounter = 0;
+                document.getElementById('autoSendCount').textContent = autoSendCounter;
+                sendData(); // 立即发送第一包
+                autoSendTimer = setInterval(sendData, interval);
+                appendLog('系统', `定时发送已开启，间隔: ${interval}ms`);
             } else {
-                // 阻断测算
-                isAutoTesting = false;
+                isAutoSending = false;
                 clearInterval(autoSendTimer);
-                btn.textContent = '启动定时环回测算';
+                btn.textContent = '开启定时发送';
                 btn.style.backgroundColor = 'var(--success)';
                 document.getElementById('sendBtn').disabled = false;
-                
-                setTimeout(evaluatePreviousCycle, 500); // 延时结算末轮物理帧
-                appendLog('算法调度', '可靠性测试引擎已安全刹停');
+                appendLog('系统', '定时发送已关闭');
             }
         }
 
-        // 校验上一周期的回流精度
-        function evaluatePreviousCycle() {
-            if (expectedPayloadStr === null) return;
-            
-            let receivedStr = currentFormat === 'ASCII' ? currentRxBuffer.join('') : currentRxBuffer.join(',');
-            
-            if (currentRxBuffer.length > 0) {
-                testStats.recv++;
-                if (receivedStr !== expectedPayloadStr) {
-                    testStats.err++;
-                    appendLog('比对探针', `发现异变帧 (期望值:${expectedPayloadStr} 回环值:${receivedStr})`);
-                }
-            } else {
-                testStats.err++;
-                appendLog('比对探针', '遭遇致命丢包，未捕获任何回传数据');
-            }
-            updateStatsUI();
-        }
-
-        // 触发自动推流循环
-        async function triggerAutoSendCycle() {
-            if (!txCharacteristic) return;
-
-            evaluatePreviousCycle(); // 优先完成上一轮校验
-
-            currentFormat = document.querySelector('input[name="format"]:checked').value;
-            let dataStr = document.getElementById('sendArea').value;
-
-            // 记录本轮期望值用于下轮校验比对
-            if (currentFormat === 'ASCII') {
-                expectedPayloadStr = dataStr;
-            } else {
-                const hexStr = dataStr.replace(/\s+/g, '');
-                let hexArr = [];
-                for (let i = 0; i < hexStr.length; i += 2) {
-                    hexArr.push(parseInt(hexStr.substring(i, i + 2), 16));
-                }
-                expectedPayloadStr = hexArr.join(',');
-            }
-
-            currentRxBuffer = []; // 彻底排空陈旧缓存池
-            
-            let successArray = await executeDirectSend(currentFormat, dataStr);
-            if (successArray) {
-                testStats.sent++;
-                updateStatsUI();
-            } else {
-                toggleAutoSend(); // 异常保护触发
-            }
-        }
-
-        // 刷新统计指标
-        function updateStatsUI() {
-            document.getElementById('statSent').textContent = testStats.sent;
-            document.getElementById('statRecv').textContent = testStats.recv;
-            document.getElementById('statErr').textContent = testStats.err;
-            let rate = testStats.sent > 0 ? ((testStats.err / testStats.sent) * 100).toFixed(2) : '0.00';
-            document.getElementById('statRate').textContent = rate + '%';
-        }
-
-        // 重置内部计数器
-        function resetStats() {
-            testStats = { sent: 0, recv: 0, err: 0 };
-            expectedPayloadStr = null;
-            currentRxBuffer = [];
-            updateStatsUI();
-            appendLog('系统级介入', '底层统计计数器已被彻底清空');
-        }
-
-        // 渲染日志并实施防溢出截断
         function appendLog(type, content) {
             const receiveArea = document.getElementById('receiveArea');
+            // 获取当前时间 HH:MM:SS
             const now = new Date();
             const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
             
+            // 构建日志格式，白底黑字下直接用简明前缀
             let logLine = `[${timeStr}] ${type}: ${content}`;
+            
             receiveArea.value += (receiveArea.value ? '\n' : '') + logLine;
             
-            // 部署阈值：文本超出一万字符则自动舍弃旧数据，阻截设备内存泄漏
-            if (receiveArea.value.length > 10000) {
-                receiveArea.value = receiveArea.value.substring(receiveArea.value.length - 8000);
+            // 新增防卡顿机制：限制最多显示5000字，超出自动截断旧日志
+            if(receiveArea.value.length > 5000) {
+                receiveArea.value = receiveArea.value.substring(receiveArea.value.length - 4000);
             }
+
+            // 滚动到底部
             receiveArea.scrollTop = receiveArea.scrollHeight;
         }
 
